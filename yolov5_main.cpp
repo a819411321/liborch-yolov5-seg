@@ -63,8 +63,8 @@ std::vector<torch::Tensor> nms(torch::Tensor preds, float score_thresh = 0.15, f
         std::tuple<torch::Tensor, torch::Tensor> max_tuple = torch::max(pred.slice(1, 5, pred.sizes()[1]), 1);
         pred.select(1, 4) = pred.select(1, 4) * std::get<0>(max_tuple);
         pred.select(1, 5) = std::get<1>(max_tuple);
-
-        torch::Tensor  dets = pred.slice(1, 0, 117);
+		//80+5+32 = 117 
+        torch::Tensor  dets = pred.slice(1, 0, pred.sizes()[1]);
 
         torch::Tensor keep = torch::empty({ dets.sizes()[0] });
         torch::Tensor areas = (dets.select(1, 3) - dets.select(1, 1)) * (dets.select(1, 2) - dets.select(1, 0));
