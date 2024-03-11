@@ -141,14 +141,18 @@ int main() {
     at::Tensor cpu_main_output = main_output[0].to(torch::kCPU);
     at::Tensor cpu_mask_output = mask_output[0].to(torch::kCPU);
     cpu_mask_output = cpu_mask_output.reshape({ 32, -1 });
-    at::Tensor cpu_main_outputproposals = cpu_main_output.slice(1, 85, 117);
+	int index1 = main_output.sizes()[2];
+    int index2 = main_output.sizes()[2]- 32;
+	//从目标检测的输出中获取协方差矩阵 后面会用于与mask做矩阵乘法 原始模型里 这两个值是117和32 
+	//协方差矩阵的大小是1x32
+    at::Tensor cpu_main_outputproposals = cpu_main_output.slice(1, index2, index1);
 
     std::vector<torch::Tensor> dets = nms(main_output, 0.5, 0.5);
 
 
     if (dets.size() > 0)
     {
-        at::Tensor proposals = dets[0].slice(1, 85, 117);
+        at::Tensor proposals = dets[0].slice(1, index2, index1);
         //mask  nx25600
         at::Tensor proposals_res = proposals.matmul(cpu_mask_output);
         //reshape nx160x160
