@@ -48,7 +48,7 @@ std::vector<torch::Tensor> nms(torch::Tensor preds, float score_thresh = 0.15, f
         pred = pred.to(at::kCPU);
 
         // Filter by scores
-        torch::Tensor scores = pred.select(1, 4) * std::get<0>(torch::max(pred.slice(1, 5, pred.sizes()[1]), 1));
+        torch::Tensor scores = pred.select(1, 4) * std::get<0>(torch::max(pred.slice(1, 5, pred.sizes()[1]-32), 1));
         pred = torch::index_select(pred, 0, torch::nonzero(scores > score_thresh).select(1, 0));
 
         if (pred.sizes()[0] == 0) continue;
@@ -60,7 +60,7 @@ std::vector<torch::Tensor> nms(torch::Tensor preds, float score_thresh = 0.15, f
         pred.select(1, 3) = pred.select(1, 1) + pred.select(1, 3);
 
         // Computing scores and classes
-        std::tuple<torch::Tensor, torch::Tensor> max_tuple = torch::max(pred.slice(1, 5, pred.sizes()[1]), 1);
+        std::tuple<torch::Tensor, torch::Tensor> max_tuple = torch::max(pred.slice(1, 5, pred.sizes()[1]-32), 1);
         pred.select(1, 4) = pred.select(1, 4) * std::get<0>(max_tuple);
         pred.select(1, 5) = std::get<1>(max_tuple);
 		//80+5+32 = 117 
